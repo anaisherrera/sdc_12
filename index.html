@@ -1,0 +1,894 @@
+<!DOCTYPE html>
+<html lang="" xml:lang="">
+  <head>
+    <title>Profundizando en RLM: Beta estandarizado y supuestos</title>
+    <meta charset="utf-8" />
+    <meta name="date" content="2026-04-23" />
+    <script src="libs/header-attrs/header-attrs.js"></script>
+    <script src="libs/kePrint/kePrint.js"></script>
+    <link href="libs/lightable/lightable.css" rel="stylesheet" />
+    <link rel="stylesheet" href="xaringan_custom/xaringan-themer.css" type="text/css" />
+  </head>
+  <body>
+    <textarea id="source">
+
+class: inverse, bottom, right
+
+
+
+
+
+
+
+
+&lt;!---
+About macros.js: permite escalar las imágenes como [:scale 50%](path to image), hay si que grabar ese archivo js en el directorio.
+.pull-left[&lt;images/Conocimiento cívico.png&gt;] 
+.pull-right[&lt;images/Conocimiento cívico_graf.png&gt;]
+
+---&gt;
+
+# _Doceava Clase Social Data Science_
+## *Profundizando en las regresiones: beta estandarizado y supuestos de aplicación*
+&lt;br&gt;
+&lt;hr&gt;
+### Docentes: Anais Herrera - Francisco Meneses
+### Ayudante: Ignacia Silva
+
+---
+
+## 🧮 Regresiones múltiples: más allá de los coeficientes
+
+**Objetivo de la clase**
+
+&gt; ¿Cómo sabemos qué variable importa más en una regresión, y cuándo podemos confiar en ese resultado?
+
+&lt;br&gt; 
+
+Para responder estas preguntas necesitamos:
+
+- Comprender el sentido de **estandarizar variables**.
+
+- Interpretar **betas estandarizados**.
+    + En miras de poder comparar la magnitud del efecto de diferentes variables independientes
+
+- Comprender las condiciones de aplicación de una regresión.
+
+
+---
+class: inverse, middle, center
+
+# Repaso de control estadístico 
+## ¿Cuándo debería existir control? 
+
+---
+
+&lt;br&gt;
+
+![:scale 120%](images/control_estadistico.png)
+
+
+
+
+
+
+---
+class: inverse, middle, center
+
+# Estandarizar y beta estandarizado
+
+
+---
+
+# Motivación
+
+* Al tener predictores con distintas escalas la comparación de qué afecta más se hace difícil. 
+ 
+El efecto en PAES de:
+  + Efecto de cada peso (`\(\beta_1 = 0.001\)`)
+  + Efecto de cada hora de estudio diaria (`\(\beta_2 = 0.6\)`)
+
+
+Los `\(\beta\)`  de pesos se multiplican por miles o millones, y las horas no superan las decenas. Esto distorsiona la comparación.
+
+
+---
+
+## 1️⃣ Estandarizar variables
+
+### ¿Qué significa estandarizar?
+
+Transformar una variable para que tenga:
+
+- **Media = 0**
+- **Desviación estándar = 1**
+
+$$
+Z_i = \frac{X_i - \bar{X}}{s_X}
+$$
+
+Permite comparar variables **en diferentes escalas** (ejemplo: puntaje en una prueba, edad, ingreso).
+
+El puntaje de un sujeto pasa de 400 puntos SIMCE a +1.5 desviaciones estándar sobre la media  
+
+o de 250 puntos a -0.2 desviaciones estándar bajo la media
+
+
+---
+
+# Ejemplo 1: Variable ingresos
+
+.pull-left[
+
+![](index_files/figure-html/unnamed-chunk-3-1.png)&lt;!-- --&gt;
+
+
+]
+
+.pull-right[
+
+El promedio de los ingresos es $556034
+
+La desviación estándar es $466150
+
+
+.small[
+
+Los primeros 5 valores
+
+
+```
+##        [,1]
+## [1,] 800000
+## [2,] 383000
+## [3,] 200000
+## [4,] 260000
+## [5,] 260000
+## [6,] 300000
+```
+
+]
+
+]
+
+---
+
+# Ejemplo 1: Estandarizar ingresos 
+
+
+
+
+``` r
+# Cálculo en R 
+
+Casen_2017_mini$ingresos_estandarizados = 
+(
+  Casen_2017_mini$ingresos - 
+  mean(Casen_2017_mini$ingresos)  
+) / 
+  sd(Casen_2017_mini$ingresos)  
+
+# O en simple
+
+Casen_2017_mini$ingresos_estandarizados = 
+  scale(Casen_2017_mini$ingresos)
+```
+
+
+---
+
+# Ejemplo 1: Ingresos estandarizados 
+
+.small[
+
+
+
+
+
+]
+
+
+
+
+.pull-left[
+
+![](index_files/figure-html/unnamed-chunk-7-1.png)&lt;!-- --&gt;
+
+
+]
+
+.pull-right[
+
+El promedio de los ingresos es $0
+
+La desviación estándar es $1
+
+
+
+.small[
+
+Los primeros 5 valores
+
+
+```
+##            [,1]
+## [1,]  0.5233628
+## [2,] -0.3711981
+## [3,] -0.7637753
+## [4,] -0.6350614
+## [5,] -0.6350614
+## [6,] -0.5492522
+```
+
+]
+
+]
+
+---
+
+## Comparación caso a caso de ingresos
+
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; ingresos &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; ingresos_estandarizados &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 800000 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.5233628 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 383000 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.3711981 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 200000 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.7637753 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 260000 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.6350614 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 260000 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.6350614 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 300000 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -0.5492522 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+* Valores de ingreso por debajo la media ($556034) quedan como negativos.
+* Valores sobre la media quedan como positivos. 
+* Todos los valores quedan en unidades de desviación estándar. 
+
+Lea el primer valor señalando cuantas DE se aleja el ingreso de la media. 
+
+---
+
+
+# Ejemplo 2: Variable edad
+
+.pull-left[
+
+![](index_files/figure-html/unnamed-chunk-10-1.png)&lt;!-- --&gt;
+
+
+]
+
+.pull-right[
+
+El promedio de la edad es $48
+
+La desviación estándar es $13
+
+.small[
+
+Los primeros 5 valores
+
+
+```
+##      [,1]
+## [1,]   27
+## [2,]   66
+## [3,]   59
+## [4,]   48
+## [5,]   57
+## [6,]   57
+```
+
+]
+
+
+]
+
+---
+
+# Ejemplo 2:  Estandarizar edad
+
+
+
+``` r
+# Cálculo en R 
+
+Casen_2017_mini$edad_estandarizada = 
+(
+  Casen_2017_mini$edad - 
+  mean(Casen_2017_mini$edad)  
+) / 
+  sd(Casen_2017_mini$edad)  
+
+# O más simple
+
+Casen_2017_mini$edad_estandarizada = 
+  scale(Casen_2017_mini$edad)
+```
+
+
+
+---
+
+# Ejemplo 2: Edad estandarizada
+
+
+.pull-left[
+
+![](index_files/figure-html/hist_edad-1.png)&lt;!-- --&gt;
+
+
+]
+
+.pull-right[
+
+El promedio de los ingresos es $0
+
+La desviación estándar es $1
+
+
+.small[
+
+Los primeros 5 valores
+
+
+```
+##            [,1]
+## [1,] -1.5872058
+## [2,]  1.4211708
+## [3,]  0.8812058
+## [4,]  0.0326893
+## [5,]  0.7269301
+## [6,]  0.7269301
+```
+
+]
+
+
+]
+
+
+---
+
+# Comparación caso a caso de edad
+
+
+&lt;table&gt;
+ &lt;thead&gt;
+  &lt;tr&gt;
+   &lt;th style="text-align:right;"&gt; edad &lt;/th&gt;
+   &lt;th style="text-align:right;"&gt; edad_estandarizada &lt;/th&gt;
+  &lt;/tr&gt;
+ &lt;/thead&gt;
+&lt;tbody&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 27 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; -1.5872058 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 66 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 1.4211708 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 59 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.8812058 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 48 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.0326893 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 57 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.7269301 &lt;/td&gt;
+  &lt;/tr&gt;
+  &lt;tr&gt;
+   &lt;td style="text-align:right;"&gt; 57 &lt;/td&gt;
+   &lt;td style="text-align:right;"&gt; 0.7269301 &lt;/td&gt;
+  &lt;/tr&gt;
+&lt;/tbody&gt;
+&lt;/table&gt;
+
+* Valores de ingreso por debajo la media ($48) quedan como negativos.
+* Valores sobre la media quedan como positivos. 
+* Todos los valores quedan en unidades de desviación estándar. 
+
+Lea el primer valor señalando cuantas DE se aleja la edad de la media. 
+
+---
+
+### ¿Por qué estandarizar para hacer regresiones?
+
+- 🔄 **Comparabilidad:** permite interpretar efectos en unidades equivalentes.
+
+- ⚖️ **Magnitud relativa:** ayuda a ver qué predictor tiene mayor peso.
+
+- 🚫 **No cambia la relación estadística** (solo cambia la escala).
+
+---
+
+# 2️⃣ Betas estandarizados (β*)
+
+### Regresión lineal múltiple
+
+$$
+Y = b_0 + b_1 X_1 + b_2 X_2 + \varepsilon
+$$
+
+Cuando las variables están estandarizadas:
+
+$$
+Z_Y = \beta_1 Z_X1 + \beta_2 Z_X2 + \varepsilon 
+$$
+
+
+→ Cada **β estandarizado** indica el cambio en **desviaciones estándar de Y**
+ante un cambio de **una desviación estándar en X**, controlando las demás variables.
+
+---
+
+### Interpretación práctica: Efectos sobre PAES
+
+| Variable | β estandarizado | Interpretación |
+|-----------|-----------------|----------------|
+| Horas de estudio (HE) | 0.45*** | Por DE que aumenta HE, aumenta el rendimiento  en 0.45 DE. |
+| Estrés | -0.32*** | Por DE que aumenta el estrés, disminuye el rendimiento  en -0.32 DE. |
+| Apoyo docente | 0.20*** | Más apoyo → mejor desempeño. |
+Nota: *** p &lt; 0.001
+
+→ Permite comparar la **importancia relativa** de los predictores.
+
+¿Cúal variable es más relevante?
+
+---
+
+.center[
+
+![:scale 120%](images/ej2_rlm.png)
+]
+
+---
+class: inverse, middle, center
+
+# ¿Qué son los supuestos de aplicación?
+## O condiciones de validez del análisis
+
+---
+
+## Regresiones múltiples: más allá de los coeficientes
+
+***Definición de supuestos***
+
+Refieren a las condiciones en las cuales se pueden utilizar adecuadamente los resultados de una regresión.  
+
+Al estimar una regresión se debe defender con evidencia que no se rompen estos supuestos. 
+
+Se pueden generar análisis para corroborar algunos.  
+
+
+---
+
+### Sobre la muestra 
+
+Para garantizar la validez externa y la posibilidad de extrapolar los resultados se suele necesitar: 
+
+  * La muestra debe ser aleatoria para garantizar representatividad.
+  * Se suele considerar un mínimo de 30 casos por predictor (es decir, por variable independiente).
+  * Muestras más ruidosas (con más dispersión en sus resultados) requieren muestras más grandes.
+
+.pull-left[
+.small[
+&gt; Se puede estimar el n mínimo necesario. En este caso cuánto N necesitamos para predecir una variable con un `\(R2\)` de 10% 3 predictores (Con un 95% de confianza). Según el código se requiere 103 casos. 
+
+]
+
+]
+
+.pull-right[
+.small[
+
+
+
+]
+
+]
+
+---
+### Sobre la muestra
+
+.small[
+
+
+```
+## +--------------------------------------------------+
+## |             SAMPLE SIZE CALCULATION              |
+## +--------------------------------------------------+
+## 
+## Linear Regression (F-Test)
+## 
+## ---------------------------------------------------
+## Hypotheses
+## ---------------------------------------------------
+##   H0 (Null Claim) : R-squared = 0 
+##   H1 (Alt. Claim) : R-squared &gt; 0 
+## 
+## ---------------------------------------------------
+## Results
+## ---------------------------------------------------
+##   Sample Size          = 103  &lt;&lt;
+##   Type 1 Error (alpha) = 0.050
+##   Type 2 Error (beta)  = 0.196
+##   Statistical Power    = 0.804
+```
+
+]
+
+---
+
+## Linealidad de la relación
+
+Las regresiones lineales suponen que la mejor forma de representar la relación entre dos continuas es una recta. 
+
+  * Es necesario evaluar visualmente la relación  _sjPlot::plot_scatter(datos, x ,y, line="auto")_
+  * Se pueden incorporar explícitamente parámetros no lineales al modelo
+  * Las variables ingresadas como categóricas están menos afectadas por este supuesto
+
+.center[
+
+![:scale 50%](images/relaciones_no_lineales.png)
+]
+
+---
+
+.pull-left[
+
+
+
+.small[
+
+
+&lt;table style="text-align:center"&gt;&lt;tr&gt;&lt;td colspan="2" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;&lt;em&gt;Dependent variable:&lt;/em&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td&gt;&lt;/td&gt;&lt;td colspan="1" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;y&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td colspan="2" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;x&lt;/td&gt;&lt;td&gt;5.249&lt;sup&gt;***&lt;/sup&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;(0.374)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;I(x2)&lt;/td&gt;&lt;td&gt;-0.553&lt;sup&gt;***&lt;/sup&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;(0.060)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;Constant&lt;/td&gt;&lt;td&gt;-0.082&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;(0.483)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;/td&gt;&lt;td&gt;&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td colspan="2" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;Observations&lt;/td&gt;&lt;td&gt;120&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;R&lt;sup&gt;2&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;0.813&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;Adjusted R&lt;sup&gt;2&lt;/sup&gt;&lt;/td&gt;&lt;td&gt;0.810&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;Residual Std. Error&lt;/td&gt;&lt;td&gt;1.794 (df = 117)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td style="text-align:left"&gt;F Statistic&lt;/td&gt;&lt;td&gt;255.093&lt;sup&gt;***&lt;/sup&gt; (df = 2; 117)&lt;/td&gt;&lt;/tr&gt;
+&lt;tr&gt;&lt;td colspan="2" style="border-bottom: 1px solid black"&gt;&lt;/td&gt;&lt;/tr&gt;&lt;tr&gt;&lt;td style="text-align:left"&gt;&lt;em&gt;Note:&lt;/em&gt;&lt;/td&gt;&lt;td style="text-align:right"&gt;&lt;sup&gt;*&lt;/sup&gt;p&lt;0.1; &lt;sup&gt;**&lt;/sup&gt;p&lt;0.05; &lt;sup&gt;***&lt;/sup&gt;p&lt;0.01&lt;/td&gt;&lt;/tr&gt;
+&lt;/table&gt;
+]
+
+]
+
+
+.pull-right[
+
+
+![](index_files/figure-html/unnamed-chunk-19-1.png)&lt;!-- --&gt;
+
+
+Cada vez que aumenta en 1 X, Y aumenta en 5.249, pero va disminuyendo en -0.553 [La relación se atenúa en cuanto más alto el valor de x]
+
+]
+
+---
+
+## Independencia de los errores o "datos no agrupados". 
+
+La regresión supone la __independencia de los casos.__ Si hay varios casos que responden a un mismo sujeto esto afecta la validez del modelo. 
+También si existen varios casos que están relacionados por estar anidados en una unidad superior (niños en escuelas, vecinos en barrios).
+
+.small[ 
+
+&gt; Si se rompe este supuesto, los errores de predicción (residuos) se relacionarán entre si (varios casos comparten parte de la causa del error). Existen test que evalúan esto [Breusch-Godfrey Test](https://fhernanb.github.io/libro_regresion/indep.html#breusch-godfrey-test)
+
+]
+
+.small[
+
+Métodos multinivel arreglan este problema [Curso Multinivel](https://multinivel.netlify.app/syllabus/)
+
+
+
+```
+## 
+## 	Breusch-Godfrey test for serial correlation of order up to 1
+## 
+## data:  modelo
+## LM test = 8.095, df = 1, p-value = 0.004439
+```
+]
+
+---
+
+## Normalidad de los residuos
+
+Se espera que los residuos (diferencia entre valores predichos y observados) se distribuyan normalmente. Garantiza la validez de las pruebas de significancia asociadas a los coeficientes del modelo.
+
+.small[
+
+&gt; Aunque pequeñas desviaciones de la normalidad no suelen afectar las estimaciones de los coeficientes, una distribución muy asimétrica o con colas extremas puede indicar que el modelo no se ajusta adecuadamente o que existen valores atípicos, faltan predictores relevantes o existen relaciones no lineales no capturadas.
+
+
+
+
+]
+
+
+.pull-left[
+
+.small[
+![](index_files/figure-html/unnamed-chunk-22-1.png)&lt;!-- --&gt;
+
+]
+
+]
+
+.small[
+.pull-right[
+
+![](index_files/figure-html/unnamed-chunk-23-1.png)&lt;!-- --&gt;
+]
+
+]
+
+---
+
+# Ausencia de multicolinealidad
+
+Este supuesto indica que las variables independientes no deben estar fuertemente correlacionadas entre sí.
+
+.small[
+
+&gt; Cuando existe alta multicolinealidad, resulta difícil distinguir el efecto individual de cada predictor sobre la variable dependiente, ya que comparten gran parte de su variabilidad. Esto puede generar coeficientes inestables, errores estándar inflados y conclusiones poco fiables sobre la importancia de los predictores.
+
+]
+
+Comando VIF calcula el Factor de Inflación de la Varianza para cada variable explicativa del modelo. Esperamos valores inferiores a 5.
+
+.small[
+
+```
+##                              GVIF Df GVIF^(1/(2*Df))
+## iris$Sepal.Width         1.946902  1        1.395314
+## iris$Petal.Length       19.898536  1        4.460778
+## as.factor(iris$Species) 27.111945  2        2.281866
+```
+
+]
+
+---
+
+### Ausencia de valores influyentes (outliers)
+
+Se asume que ningún caso individual ejerce una influencia excesiva sobre la estimación del modelo.
+
+.small[
+&gt; Los valores influyentes pueden distorsionar los coeficientes, alterar la significancia estadística y afectar la validez general del modelo. Evaluar si responden a errores de medición o a observaciones legítimas que deben analizarse por separado.
+
+]
+
+
+.pull-left[
+
+.small[
+
+![:scale 100%](images/outlier.png)
+
+]
+
+]
+
+.small[
+.pull-right[
+
+![](index_files/figure-html/unnamed-chunk-25-1.png)&lt;!-- --&gt;
+
+]
+
+]
+
+
+---
+
+# En resumen
+
+Supuestos de validez de la regresión: 
+
+  * **Muestra adecuada** *(no se analiza estadísticamente)*
+  
+  * **Relaciones lineales** *(se analiza estadísticamente)*
+
+  * **Independencia de los errores** *(se analiza estadísticamente)*
+
+  * **Normalidad de los residuos** *(se analiza estadísticamente)*
+
+  * **Ausencia de multicolinealidad** *(se analiza estadísticamente)*
+
+  * **Ausencia de valores influyentes** *(se analiza estadísticamente)*
+
+---
+class: inverse, middle, center
+
+*Para interpretar correctamente una regresión no es suficiente con ver qué relaciones son significativas...*
+
+ Primero hay que preguntarse si el modelo es válido
+
+ Luego hay que comparar la magnitud del efecto de las diferentes variables independientes (con efecto significativo)
+
+---
+
+# Ticket de salida
+.center[
+![:scale 60%](images/qr_ticket10.png)
+]
+    </textarea>
+<style data-target="print-only">@media screen {.remark-slide-container{display:block;}.remark-slide-scaler{box-shadow:none;}}</style>
+<script src="https://remarkjs.com/downloads/remark-latest.min.js"></script>
+<script src="xaringan_custom/macros.js"></script>
+<script>var slideshow = remark.create({
+  "highlightStyle": "github",
+  "highlightLines": true,
+  "countIncrementalSlides": false
+});
+if (window.HTMLWidgets) slideshow.on('afterShowSlide', function (slide) {
+  window.dispatchEvent(new Event('resize'));
+});
+(function(d) {
+  var s = d.createElement("style"), r = d.querySelector(".remark-slide-scaler");
+  if (!r) return;
+  s.type = "text/css"; s.innerHTML = "@page {size: " + r.style.width + " " + r.style.height +"; }";
+  d.head.appendChild(s);
+})(document);
+
+(function(d) {
+  var el = d.getElementsByClassName("remark-slides-area");
+  if (!el) return;
+  var slide, slides = slideshow.getSlides(), els = el[0].children;
+  for (var i = 1; i < slides.length; i++) {
+    slide = slides[i];
+    if (slide.properties.continued === "true" || slide.properties.count === "false") {
+      els[i - 1].className += ' has-continuation';
+    }
+  }
+  var s = d.createElement("style");
+  s.type = "text/css"; s.innerHTML = "@media print { .has-continuation { display: none; } }";
+  d.head.appendChild(s);
+})(document);
+// delete the temporary CSS (for displaying all slides initially) when the user
+// starts to view slides
+(function() {
+  var deleted = false;
+  slideshow.on('beforeShowSlide', function(slide) {
+    if (deleted) return;
+    var sheets = document.styleSheets, node;
+    for (var i = 0; i < sheets.length; i++) {
+      node = sheets[i].ownerNode;
+      if (node.dataset["target"] !== "print-only") continue;
+      node.parentNode.removeChild(node);
+    }
+    deleted = true;
+  });
+})();
+// add `data-at-shortcutkeys` attribute to <body> to resolve conflicts with JAWS
+// screen reader (see PR #262)
+(function(d) {
+  let res = {};
+  d.querySelectorAll('.remark-help-content table tr').forEach(tr => {
+    const t = tr.querySelector('td:nth-child(2)').innerText;
+    tr.querySelectorAll('td:first-child .key').forEach(key => {
+      const k = key.innerText;
+      if (/^[a-z]$/.test(k)) res[k] = t;  // must be a single letter (key)
+    });
+  });
+  d.body.setAttribute('data-at-shortcutkeys', JSON.stringify(res));
+})(document);
+(function() {
+  "use strict"
+  // Replace <script> tags in slides area to make them executable
+  var scripts = document.querySelectorAll(
+    '.remark-slides-area .remark-slide-container script'
+  );
+  if (!scripts.length) return;
+  for (var i = 0; i < scripts.length; i++) {
+    var s = document.createElement('script');
+    var code = document.createTextNode(scripts[i].textContent);
+    s.appendChild(code);
+    var scriptAttrs = scripts[i].attributes;
+    for (var j = 0; j < scriptAttrs.length; j++) {
+      s.setAttribute(scriptAttrs[j].name, scriptAttrs[j].value);
+    }
+    scripts[i].parentElement.replaceChild(s, scripts[i]);
+  }
+})();
+(function() {
+  var links = document.getElementsByTagName('a');
+  for (var i = 0; i < links.length; i++) {
+    if (/^(https?:)?\/\//.test(links[i].getAttribute('href'))) {
+      links[i].target = '_blank';
+    }
+  }
+})();
+// adds .remark-code-has-line-highlighted class to <pre> parent elements
+// of code chunks containing highlighted lines with class .remark-code-line-highlighted
+(function(d) {
+  const hlines = d.querySelectorAll('.remark-code-line-highlighted');
+  const preParents = [];
+  const findPreParent = function(line, p = 0) {
+    if (p > 1) return null; // traverse up no further than grandparent
+    const el = line.parentElement;
+    return el.tagName === "PRE" ? el : findPreParent(el, ++p);
+  };
+
+  for (let line of hlines) {
+    let pre = findPreParent(line);
+    if (pre && !preParents.includes(pre)) preParents.push(pre);
+  }
+  preParents.forEach(p => p.classList.add("remark-code-has-line-highlighted"));
+})(document);</script>
+
+<script>
+slideshow._releaseMath = function(el) {
+  var i, text, code, codes = el.getElementsByTagName('code');
+  for (i = 0; i < codes.length;) {
+    code = codes[i];
+    if (code.parentNode.tagName !== 'PRE' && code.childElementCount === 0) {
+      text = code.textContent;
+      if (/^\\\((.|\s)+\\\)$/.test(text) || /^\\\[(.|\s)+\\\]$/.test(text) ||
+          /^\$\$(.|\s)+\$\$$/.test(text) ||
+          /^\\begin\{([^}]+)\}(.|\s)+\\end\{[^}]+\}$/.test(text)) {
+        code.outerHTML = code.innerHTML;  // remove <code></code>
+        continue;
+      }
+    }
+    i++;
+  }
+};
+slideshow._releaseMath(document);
+</script>
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+(function () {
+  var script = document.createElement('script');
+  script.type = 'text/javascript';
+  script.src  = 'https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-MML-AM_CHTML';
+  if (location.protocol !== 'file:' && /^https?:/.test(script.src))
+    script.src  = script.src.replace(/^https?:/, '');
+  document.getElementsByTagName('head')[0].appendChild(script);
+})();
+</script>
+  </body>
+</html>
