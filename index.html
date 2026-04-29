@@ -3,7 +3,7 @@
   <head>
     <title>Profundizando en RLM: Beta estandarizado y supuestos</title>
     <meta charset="utf-8" />
-    <meta name="date" content="2026-04-23" />
+    <meta name="date" content="2026-04-29" />
     <script src="libs/header-attrs/header-attrs.js"></script>
     <script src="libs/kePrint/kePrint.js"></script>
     <link href="libs/lightable/lightable.css" rel="stylesheet" />
@@ -284,9 +284,9 @@ Lea el primer valor señalando cuantas DE se aleja el ingreso de la media.
 
 .pull-right[
 
-El promedio de la edad es $48
+El promedio de la edad es 48
 
-La desviación estándar es $13
+La desviación estándar es 13
 
 .small[
 
@@ -346,9 +346,9 @@ Casen_2017_mini$edad_estandarizada =
 
 .pull-right[
 
-El promedio de los ingresos es $0
+El promedio de los ingresos es 0
 
-La desviación estándar es $1
+La desviación estándar es 1
 
 
 .small[
@@ -412,7 +412,7 @@ Los primeros 5 valores
 &lt;/tbody&gt;
 &lt;/table&gt;
 
-* Valores de ingreso por debajo la media ($48) quedan como negativos.
+* Valores de ingreso por debajo la media (48) quedan como negativos.
 * Valores sobre la media quedan como positivos. 
 * Todos los valores quedan en unidades de desviación estándar. 
 
@@ -511,6 +511,14 @@ Para garantizar la validez externa y la posibilidad de extrapolar los resultados
 .small[
 
 
+``` r
+#install.packages("pwrss")
+library(pwrss)
+power.f.regression(r.squared = 0.10, # R2 que se espera según literatura. 
+                   k.total = 3, # número de predictores
+                   power = 0.80,
+                   alpha = 0.05,)
+```
 
 ]
 

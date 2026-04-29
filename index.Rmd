@@ -299,9 +299,9 @@ hist(Casen_2017_mini$edad, main="Histograma de edad", xlab = "Edad", ylab = "Fre
 
 .pull-right[
 
-El promedio de la edad es `r  paste0("$",round(mean(Casen_2017_mini$edad),0))  `
+El promedio de la edad es `r  paste0(round(mean(Casen_2017_mini$edad),0))  `
 
-La desviación estándar es `r  paste0("$",round(sd(Casen_2017_mini$edad),0))  `
+La desviación estándar es `r  paste0(round(sd(Casen_2017_mini$edad),0))  `
 
 .small[
 
@@ -360,9 +360,9 @@ hist(Casen_2017_mini$edad_estandarizada, main="Histograma de edad estandarizada"
 
 .pull-right[
 
-El promedio de los ingresos es `r  paste0("$",round(mean(Casen_2017_mini$edad_estandarizada),0))  `
+El promedio de los ingresos es `r  paste0(round(mean(Casen_2017_mini$edad_estandarizada),0))  `
 
-La desviación estándar es `r  paste0("$",round(sd(Casen_2017_mini$edad_estandarizada),0))  `
+La desviación estándar es `r  paste0(round(sd(Casen_2017_mini$edad_estandarizada),0))  `
 
 
 .small[
@@ -388,7 +388,7 @@ head(Casen_2017_mini$edad_estandarizada) %>% as.matrix()
 head(Casen_2017_mini %>% select(edad, edad_estandarizada)) %>% kableExtra::kbl()
 ```
 
-* Valores de ingreso por debajo la media (`r  paste0("$",round(mean(Casen_2017_mini$edad),0))  `) quedan como negativos.
+* Valores de ingreso por debajo la media (`r  paste0(round(mean(Casen_2017_mini$edad),0))  `) quedan como negativos.
 * Valores sobre la media quedan como positivos. 
 * Todos los valores quedan en unidades de desviación estándar. 
 
@@ -486,7 +486,7 @@ Para garantizar la validez externa y la posibilidad de extrapolar los resultados
 .pull-right[
 .small[
 
-```{r eval=FALSE, message=FALSE, warning=FALSE}
+```{r echo=TRUE, eval=FALSE, message=FALSE, warning=FALSE}
 #install.packages("pwrss")
 library(pwrss)
 power.f.regression(r.squared = 0.10, # R2 que se espera según literatura. 
